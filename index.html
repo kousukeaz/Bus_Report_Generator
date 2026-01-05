@@ -199,7 +199,8 @@
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-
+// ★あなたのGASの /exec URL に置き換える
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyKCFrTV1Rlcm1yHW3u8TI54U2oCW_-iW15deV4AGT--pPxGUBfZLGRdUHEkpNZtEM/exec";
   const LS = {
     A2: "bus_report_A2",
     B2: "bus_report_B2",
@@ -330,6 +331,45 @@ function unitPrice(rowKey, colKey){
     if(code >= 71 && code <= 77) return "雨";
     return "くもり";
   }
+
+  // ★前回在庫をGASから取得（prevInvに反映）
+async function fetchPrevInventory(){
+  const statusEl = $("fetchStatus");
+  if(statusEl) statusEl.textContent = "取得中…";
+
+  const date = $("date").value; // YYYY-MM-DD
+  const bus  = $("bus").value;  // A/B
+
+  if(!GAS_URL || !GAS_URL.startsWith("https://script.google.com/")){
+    if(statusEl) statusEl.textContent = "GAS_URLが未設定です（/exec URLを貼ってください）";
+    return;
+  }
+
+  const url = `${GAS_URL}?action=getPrev&date=${encodeURIComponent(date)}&bus=${encodeURIComponent(bus)}`;
+
+  try{
+    const res = await fetch(url, { cache:"no-store" });
+    const data = await res.json();
+
+    if(!data.ok){
+      if(statusEl) statusEl.textContent = `取得失敗: ${data.error || "unknown"}`;
+      return;
+    }
+    if(!data.found){
+      if(statusEl) statusEl.textContent = "前回在庫が見つかりません（LINE貼り付けで対応してください）";
+      return;
+    }
+
+    // 取得成功 → prevInvを上書きしてテーブル更新
+    prevInv = data.inv;
+    renderInvTable();
+
+    if(statusEl) statusEl.textContent = `取得成功（${data.source_date} / バス${data.bus}）`;
+  }catch(e){
+    console.error(e);
+    if(statusEl) statusEl.textContent = "通信エラー";
+  }
+}
 
   async function fetchWeatherDefault(){
     const hint = $("weatherHint");
@@ -687,6 +727,10 @@ function unitPrice(rowKey, colKey){
     showParseStatus(parsed);
     renderInvTable();
   });
+  $("fetchPrevBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  fetchPrevInventory();
+});
 
   $("genInv").addEventListener("click", (e) => {
     e.preventDefault();
