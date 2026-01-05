@@ -94,6 +94,10 @@
       <button id="parseBtn">パース（読み取り）</button>
       <button id="clearPrevBtn" class="sub">貼り付けクリア</button>
     </div>
+    <div class="btnrow2" style="margin-top:10px;">
+  <button id="fetchPrevBtn">前回在庫を自動取得</button>
+  <div id="fetchStatus" class="status small"></div>
+</div>
     <div id="parseStatus" class="status small"></div>
 
     <div style="margin-top:10px;">
@@ -252,16 +256,12 @@
     g_kairo: 100
   };
 
-  // 関西パスの特例：バスのみ1DAY（大人）だけ 2500円
-  function unitPrice(rowKey, colKey){
-    if(colKey === "kansai" && rowKey === "t3") return 2500;
-    return PRICE[rowKey] ?? 0;
-  }
-   // 関西パスの特例：バスのみ1DAY（子供）だけ 1500円
-  function unitPrice(rowKey, colKey){
-    if(colKey === "kansai" && rowKey === "t8") return 1500;
-    return PRICE[rowKey] ?? 0;
-  }
+  // 関西パスの特例：大人 t3=2500 / 子供 t8=1500
+function unitPrice(rowKey, colKey){
+  if(colKey === "kansai" && rowKey === "t3") return 2500; // バスのみ1DAY(大人)
+  if(colKey === "kansai" && rowKey === "t8") return 1500; // バスのみ1DAY(子供)
+  return PRICE[rowKey] ?? 0;
+}
 
 
   
