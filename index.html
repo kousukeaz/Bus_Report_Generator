@@ -257,7 +257,14 @@
     if(colKey === "kansai" && rowKey === "t3") return 2500;
     return PRICE[rowKey] ?? 0;
   }
+   // 関西パスの特例：バスのみ1DAY（子供）だけ 1500円
+  function unitPrice(rowKey, colKey){
+    if(colKey === "kansai" && rowKey === "t8") return 1500;
+    return PRICE[rowKey] ?? 0;
+  }
 
+
+  
   // --- 状態 ---
   let prevInv = Object.fromEntries(TICKETS.map(t => [t.key, 0]));
   let detectedPrevStaff = "";
